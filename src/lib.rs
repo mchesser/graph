@@ -6,6 +6,9 @@
 extern crate num;
 
 pub mod shortest_path;
+pub mod adjacency_map;
+
+pub use adjacency_map::AdjacencyMap;
 
 pub trait Graph {
     type Node;
