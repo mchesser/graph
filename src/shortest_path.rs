@@ -13,7 +13,7 @@ use num::traits::Zero;
 
 pub fn a_star<G: Graph>(graph: &G, start: G::Node, end: G::Node) -> Option<Vec<G::Node>>
     where G::Node: Hash<Hasher> + Eq + Clone,
-          G::Neighbours: Iterator<Item=G::Node> + IteratorExt,
+          G::Neighbours: Iterator<Item=G::Node>,
           G::Weight: Clone + Ord + PartialOrd + Add<Output=G::Weight> + Zero
 {
     let mut dist_map: HashMap<_, PathNode<_, G::Weight>> = HashMap::new();
