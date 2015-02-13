@@ -8,7 +8,6 @@ use std::collections::hash_map::Keys;
 
 pub type NodeId = usize;
 type ListId = usize;
-type Outgoing<'a, W> = Keys<'a, usize, W>;
 
 pub struct AdjacencyMapNode<V, W> {
     pub value: V,
@@ -50,10 +49,12 @@ impl<V, W> Index<NodeId> for AdjacencyMap<V, W> {
     }
 }
 
+type OutgoingIter<'a, W> = Keys<'a, usize, W>;
+
 impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Zero + Clone {
     type Node = NodeId;
     type Weight = W;
-    type Neighbours = Outgoing<'a, W>;
+    type Neighbours = OutgoingIter<'a, W>;
     
     fn weight(&self, from: &NodeId, to: &NodeId) -> Option<W> {
         match self.map.get(from) {
@@ -62,7 +63,7 @@ impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Zero + Clone {
         }
     }
     
-    fn neighbours(&self, node: &NodeId) -> Outgoing<'a, W> {
+    fn neighbours(&self, node: &NodeId) -> OutgoingIter<'a, W> {
         self.nodes[*node].outgoing.keys()
     }
     
