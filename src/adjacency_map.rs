@@ -1,7 +1,5 @@
 use Graph;
 
-use num::{self, Zero};
-
 use std::ops::Index;
 use std::collections::HashMap;
 use std::iter::Map;
@@ -57,7 +55,7 @@ impl<V, W> Index<NodeId> for AdjacencyMap<V, W> {
 
 type OutgoingIter<'a, W> = Map<Keys<'a, usize, W>, fn(&usize) -> usize>;
 
-impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Zero + Clone {
+impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
     type Node = NodeId;
     type Weight = W;
     type Neighbours = OutgoingIter<'a, W>;
@@ -73,16 +71,14 @@ impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Zero + Clone {
         fn f(k: &usize) -> usize { *k }
         self.nodes[self.map[*node]].outgoing.keys().map(f)
     }
-
-    fn heuristic(&self, _: &NodeId, _: &NodeId) -> W {
-        num::zero()
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use shortest_path::a_star;
     use super::*;
+
+    fn no_heuristic(_: &NodeId, _: &NodeId) -> u32 { 0 }
 
     #[test]
     fn test_using_shortest_path() {
@@ -106,7 +102,7 @@ mod tests {
         graph.add_edge(5, 6, 14);
 
         let (start, end) = (1, 5);
-        let path = a_star(&&graph, start, end);
+        let path = a_star(&&graph, start, end, no_heuristic);
         assert!(path.is_some());
 
         let path = path.unwrap();

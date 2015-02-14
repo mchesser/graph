@@ -11,7 +11,10 @@ use std::collections::BinaryHeap;
 use num;
 use num::traits::Zero;
 
-pub fn a_star<G: Graph>(graph: &G, start: G::Node, end: G::Node) -> Option<Vec<G::Node>>
+pub type Heuristic<N, W> = fn(from: &N, to: &N) -> W;
+
+pub fn a_star<G: Graph>(graph: &G, start: G::Node, end: G::Node,
+    heuristic: Heuristic<G::Node, G::Weight>) -> Option<Vec<G::Node>>
     where G::Node: Hash<Hasher> + Eq + Clone,
           G::Neighbours: Iterator<Item=G::Node>,
           G::Weight: Clone + Ord + PartialOrd + Add<Output=G::Weight> + Zero
@@ -55,7 +58,7 @@ pub fn a_star<G: Graph>(graph: &G, start: G::Node, end: G::Node) -> Option<Vec<G
 
             let mut next_val = PathNode::new(node, Some(active_val.node.clone()));
             next_val.g_cost = active_val.g_cost.clone() + move_cost;
-            next_val.h_cost = graph.heuristic(&next_val.node, &end);
+            next_val.h_cost = heuristic(&next_val.node, &end);
             frontier.push(next_val);
         }
     }
@@ -197,16 +200,16 @@ mod tests {
                 height: self.height
             }
         }
+    }
 
-        fn heuristic(&self, from: &(u32, u32), to: &(u32, u32)) -> usize {
-            ((from.0 as i32 - to.0 as i32).abs() + (from.1 as i32 - to.0 as i32).abs()) as usize * 10
-        }
+    fn grid_heuristic(from: &(u32, u32), to: &(u32, u32)) -> usize {
+        ((from.0 as i32 - to.0 as i32).abs() + (from.1 as i32 - to.0 as i32).abs()) as usize * 10
     }
 
     #[test]
     fn test_pathfinding_basic() {
         let grid = Grid::new(5, 5);
-        let path = a_star(&grid, (0, 0), (4, 0));
+        let path = a_star(&grid, (0, 0), (4, 0), grid_heuristic);
         assert!(path.is_some());
         assert_eq!(path.unwrap(), vec![(4, 0), (3, 0), (2, 0), (1, 0), (0, 0)]);
     }
@@ -214,7 +217,7 @@ mod tests {
     #[test]
     fn test_pathfinding_off_screen() {
         let grid = Grid::new(5, 5);
-        let path = a_star(&grid, (0, 0), (5, 0));
+        let path = a_star(&grid, (0, 0), (5, 0), grid_heuristic);
         assert!(path.is_none());
     }
 
@@ -225,7 +228,7 @@ mod tests {
             grid.set(&(7, y), true);
         }
 
-        let path = a_star(&grid, (2, 2), (300, 50));
+        let path = a_star(&grid, (2, 2), (300, 50), grid_heuristic);
         assert!(path.is_some());
 
         let path = path.unwrap();
@@ -243,7 +246,7 @@ mod tests {
         let mut grid = Grid::new(5, 5);
         grid.set(&(3, 0), true);
         grid.set(&(4, 1), true);
-        let path = a_star(&grid, (0, 0), (4, 0));
+        let path = a_star(&grid, (0, 0), (4, 0), grid_heuristic);
         assert!(path.is_none());
     }
 }

@@ -17,5 +17,4 @@ pub trait Graph {
 
     fn weight(&self, from: &Self::Node, to: &Self::Node) -> Option<Self::Weight>;
     fn neighbours(&self, node: &Self::Node) -> Self::Neighbours;
-    fn heuristic(&self, from: &Self::Node, to: &Self::Node) -> Self::Weight;
 }
