@@ -68,15 +68,15 @@ pub fn a_star<G: Graph>(graph: &G, start: G::Node, end: G::Node,
 }
 
 #[derive(Clone)]
-struct PathNode<N, C> {
+struct PathNode<N, W> {
     node: N,
     parent: Option<N>,
-    h_cost: C,
-    g_cost: C,
+    h_cost: W,
+    g_cost: W,
 }
 
-impl<N, C: Zero + Add> PathNode<N, C> {
-    pub fn new(node: N, parent: Option<N>) -> PathNode<N, C> {
+impl<N, W: Zero + Add> PathNode<N, W> {
+    pub fn new(node: N, parent: Option<N>) -> PathNode<N, W> {
         PathNode {
             node: node,
             h_cost: num::zero(),
@@ -86,27 +86,27 @@ impl<N, C: Zero + Add> PathNode<N, C> {
     }
 }
 
-impl<N, C> PathNode<N, C> where C: Add<Output=C> + Clone {
-    pub fn f_cost(&self) -> C {
+impl<N, W> PathNode<N, W> where W: Add<Output=W> + Clone {
+    pub fn f_cost(&self) -> W {
         self.h_cost.clone() + self.g_cost.clone()
     }
 }
 
-impl<N, C> PartialEq for PathNode<N, C> where C: PartialEq + Add<Output=C> + Clone {
-    fn eq(&self, other: &PathNode<N, C>) -> bool {
+impl<N, W> PartialEq for PathNode<N, W> where W: PartialEq + Add<Output=W> + Clone {
+    fn eq(&self, other: &PathNode<N, W>) -> bool {
         self.f_cost() == other.f_cost()
     }
 }
-impl<N, C> Eq for PathNode<N, C> where C: PartialEq + Add<Output=C> + Clone {}
+impl<N, W> Eq for PathNode<N, W> where W: PartialEq + Add<Output=W> + Clone {}
 
-impl<N, C> PartialOrd for PathNode<N, C> where C: PartialOrd + Add<Output=C> + Clone {
-    fn partial_cmp(&self, other: &PathNode<N, C>) -> Option<Ordering> {
+impl<N, W> PartialOrd for PathNode<N, W> where W: PartialOrd + Add<Output=W> + Clone {
+    fn partial_cmp(&self, other: &PathNode<N, W>) -> Option<Ordering> {
         // Reverse the ordering so that it makes a min queue
         other.f_cost().partial_cmp(&self.f_cost())
     }
 }
-impl<N, C> Ord for PathNode<N, C> where C: Ord + Add<Output=C> + Clone {
-    fn cmp(&self, other: &PathNode<N, C>) -> Ordering {
+impl<N, W> Ord for PathNode<N, W> where W: Ord + Add<Output=W> + Clone {
+    fn cmp(&self, other: &PathNode<N, W>) -> Ordering {
         // Reverse the ordering so that it makes a min queue
         other.f_cost().cmp(&self.f_cost())
     }
