@@ -73,39 +73,3 @@ impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use shortest_path::a_star;
-    use super::*;
-
-    fn no_heuristic(_: &NodeId, _: &NodeId) -> u32 { 0 }
-
-    #[test]
-    fn test_using_shortest_path() {
-        let mut graph = AdjacencyMap::new();
-
-        graph.add_node(1, ());
-        graph.add_node(2, ());
-        graph.add_node(3, ());
-        graph.add_node(4, ());
-        graph.add_node(5, ());
-        graph.add_node(6, ());
-
-        graph.add_edge(1, 2, 7);
-        graph.add_edge(1, 3, 9);
-        graph.add_edge(1, 6, 14);
-        graph.add_edge(2, 3, 10);
-        graph.add_edge(2, 4, 15);
-        graph.add_edge(3, 4, 11);
-        graph.add_edge(3, 6, 2);
-        graph.add_edge(4, 5, 6);
-        graph.add_edge(5, 6, 14);
-
-        let (start, end) = (1, 5);
-        let path = a_star(&&graph, start, end, no_heuristic);
-        assert!(path.is_some());
-
-        let path = path.unwrap();
-        assert_eq!(path, vec![5, 6, 3, 1]);
-    }
-}
