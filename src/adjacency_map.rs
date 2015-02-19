@@ -2,7 +2,6 @@ use Graph;
 
 use std::ops::Index;
 use std::collections::HashMap;
-use std::iter::Map;
 use std::collections::hash_map::Keys;
 
 pub type NodeId = usize;
@@ -53,23 +52,44 @@ impl<V, W> Index<NodeId> for AdjacencyMap<V, W> {
     }
 }
 
-type OutgoingIter<'a, W> = Map<Keys<'a, usize, W>, fn(&usize) -> usize>;
+// Currently there is no easy way to return an iterator that uses a closure, so we manually map the
+// inner iterator instead
+struct OutgoingEdgesIter<'a, W: 'a> {
+    from: NodeId,
+    iter_base: Keys<'a, usize, W>,
+}
 
-impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
-    type NodeId = NodeId;
-    type Weight = W;
-    type Neighbours = OutgoingIter<'a, W>;
-
-    fn weight(&self, from: &NodeId, to: &NodeId) -> Option<W> {
-        match self.map.get(from) {
-            Some(node) => self.nodes[*node].outgoing.get(to).map(|w| w.clone()),
+impl<'a, W> Iterator for OutgoingEdgesIter<'a, W> {
+    type Item = (NodeId, NodeId);
+    fn next(&mut self) -> Option<(NodeId, NodeId)> {
+        match self.iter_base.next() {
+            Some(&to) => Some((self.from, to)),
             None => None,
         }
     }
+}
 
-    fn neighbours(&self, node: &NodeId) -> OutgoingIter<'a, W> {
-        fn f(k: &usize) -> usize { *k }
-        self.nodes[self.map[*node]].outgoing.keys().map(f)
+impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
+    type NodeId = NodeId;
+    type Edge = (NodeId, NodeId);
+    type Weight = W;
+    type OutgoingEdgesIter = OutgoingEdgesIter<'a, W>;
+
+    fn target(&self, edge: &(NodeId, NodeId)) -> NodeId {
+        edge.1
+    }
+
+    fn weight(&self, edge: &(NodeId, NodeId)) -> W {
+        let &(from, to) = edge;
+        let node = self.map.get(&from).expect("Inconsistent graph");
+        self.nodes[*node].outgoing.get(&to).map(|w| w.clone()).expect("Inconsistent graph")
+    }
+
+    fn outgoing_edges(&self, node: &NodeId) -> OutgoingEdgesIter<'a, W> {
+        OutgoingEdgesIter {
+            from: *node,
+            iter_base: self.nodes[self.map[*node]].outgoing.keys(),
+        }
     }
 }
 

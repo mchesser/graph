@@ -2,7 +2,6 @@ use Graph;
 
 use std::ops::Add;
 use std::cmp::{PartialOrd, Ordering};
-use std::iter::IteratorExt;
 use std::hash::Hash;
 
 use std::collections::hash_map::{HashMap, Hasher, Entry};
@@ -16,7 +15,7 @@ pub type Heuristic<N, W> = fn(from: &N, to: &N) -> W;
 pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
     heuristic: Heuristic<G::NodeId, G::Weight>) -> Option<Vec<G::NodeId>>
     where G::NodeId: Hash<Hasher> + Eq + Clone,
-          G::Neighbours: Iterator<Item=G::NodeId>,
+          G::Edge: Clone,
           G::Weight: Clone + Ord + PartialOrd + Add<Output=G::Weight> + Zero
 {
     let mut dist_map: HashMap<_, PathNode<_, G::Weight>> = HashMap::new();
@@ -49,17 +48,14 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
 
         // Visit all the neighbours of the current node that have not already been added to the
         // distance map
-        for node in graph.neighbours(&active_val.node).filter(|n| !dist_map.contains_key(n)) {
-            // Get the cost of moving from the current node to the next node
-            let move_cost = match graph.weight(&active_val.node, &node) {
-                Some(c) => c,
-                None => break,
-            };
-
-            let mut next_val = PathNode::new(node, Some(active_val.node.clone()));
-            next_val.g_cost = active_val.g_cost.clone() + move_cost;
-            next_val.h_cost = heuristic(&next_val.node, &end);
-            frontier.push(next_val);
+        for edge in graph.outgoing_edges(&active_val.node) {
+            let target = graph.target(&edge);
+            if !dist_map.contains_key(&target) {
+                let mut next_val = PathNode::new(target, Some(active_val.node.clone()));
+                next_val.g_cost = active_val.g_cost.clone() + graph.weight(&edge);
+                next_val.h_cost = heuristic(&next_val.node, &end);
+                frontier.push(next_val);
+            }
         }
     }
 

@@ -12,9 +12,11 @@ pub use adjacency_map::AdjacencyMap;
 
 pub trait Graph {
     type NodeId;
+    type Edge;
     type Weight;
-    type Neighbours;
+    type OutgoingEdgesIter: Iterator<Item=Self::Edge>;
 
-    fn weight(&self, from: &Self::NodeId, to: &Self::NodeId) -> Option<Self::Weight>;
-    fn neighbours(&self, node: &Self::NodeId) -> Self::Neighbours;
+    fn target(&self, edge: &Self::Edge) -> Self::NodeId;
+    fn weight(&self, edge: &Self::Edge) -> Self::Weight;
+    fn outgoing_edges(&self, node: &Self::NodeId) -> Self::OutgoingEdgesIter;
 }
