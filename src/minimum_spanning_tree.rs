@@ -1,0 +1,102 @@
+use Graph;
+
+use std::cmp::{PartialOrd, Ordering};
+use std::iter::IteratorExt;
+use std::hash::Hash;
+
+use std::collections::hash_map::Hasher;
+use std::collections::{HashSet, BinaryHeap};
+
+pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
+    where G::NodeId: Hash<Hasher> + Eq + Clone,
+          G::Edge: Clone,
+          G::Weight: Clone + Ord + PartialOrd
+{
+    let mut edges = Vec::new();
+    let mut connected_nodes = HashSet::new();
+    connected_nodes.insert(start.clone());
+
+    let mut active_edges = BinaryHeap::new();
+    active_edges.extend(
+        graph.outgoing_edges(&start)
+            .map(|e| EdgeContainer { cost: graph.weight(&e), edge: e })
+    );
+
+    while let Some(edge) = active_edges.pop() {
+        let current_node = graph.target(&edge.edge);
+        if !connected_nodes.insert(current_node.clone()) {
+            // If insert returned false, then this node has already been visited by some other edge
+            continue
+        }
+        edges.push(edge.edge.clone());
+
+        // Add this node's edges to the list of active edges
+        active_edges.extend(
+            graph.outgoing_edges(&current_node)
+                .map(|e| EdgeContainer { cost: graph.weight(&e), edge: e })
+                .filter(|e| !connected_nodes.contains(&graph.target(&e.edge)))
+        );
+    }
+
+    edges
+}
+
+struct EdgeContainer<E, W> {
+    cost: W,
+    edge: E,
+}
+
+//
+// Boilerplate code for implementing Ord for EdgeContainer, ensuring that we implemented so that it
+// will be placed in as a binary heap as a min heap.
+//
+
+impl<E, W> PartialEq for EdgeContainer<E, W> where W: Eq {
+    fn eq(&self, other: &EdgeContainer<E, W>) -> bool {
+        self.cost == other.cost
+    }
+}
+impl<E, W> Eq for EdgeContainer<E, W> where W: Eq {}
+
+impl<E, W> PartialOrd for EdgeContainer<E, W> where W: PartialOrd + Eq {
+    fn partial_cmp(&self, other: &EdgeContainer<E, W>) -> Option<Ordering> {
+        other.cost.partial_cmp(&self.cost)
+    }
+}
+impl<E, W> Ord for EdgeContainer<E, W> where W: Ord + Clone {
+    fn cmp(&self, other: &EdgeContainer<E, W>) -> Ordering {
+        other.cost.cmp(&self.cost)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::prims;
+    use std::iter::AdditiveIterator;
+    use AdjacencyMap;
+    use Graph;
+
+    #[test]
+    fn test_simple() {
+        //  [1] --2-- [2]
+        //      \      |
+        //        1    2
+        //          \  |
+        //  [3] --3-- [4]
+        let mut graph = AdjacencyMap::new();
+
+        graph.add_node(1, ());
+        graph.add_node(2, ());
+        graph.add_node(3, ());
+        graph.add_node(4, ());
+
+        graph.add_edge(1, 2, 2);
+        graph.add_edge(1, 4, 1);
+        graph.add_edge(2, 4, 2);
+        graph.add_edge(3, 4, 3);
+
+        let mst = prims(&&graph, 1);
+        let total = mst.iter().map(|e| (&graph).weight(&e)).sum();
+        assert_eq!(total, 3 + 1 + 2);
+    }
+}

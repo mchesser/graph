@@ -7,6 +7,7 @@ extern crate num;
 
 pub mod adjacency_map;
 pub mod shortest_path;
+pub mod minimum_spanning_tree;
 
 pub use adjacency_map::AdjacencyMap;
 
