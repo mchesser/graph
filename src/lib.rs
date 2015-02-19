@@ -1,20 +1,20 @@
 //! # Graph
 //!
 //! A WIP library for graph representations and algorithms
-#![feature(core)]
+#![feature(std_misc, hash)]
 
 extern crate num;
 
-pub mod shortest_path;
 pub mod adjacency_map;
+pub mod shortest_path;
 
 pub use adjacency_map::AdjacencyMap;
 
 pub trait Graph {
-    type Node;
+    type NodeId;
     type Weight;
     type Neighbours;
 
-    fn weight(&self, from: &Self::Node, to: &Self::Node) -> Option<Self::Weight>;
-    fn neighbours(&self, node: &Self::Node) -> Self::Neighbours;
+    fn weight(&self, from: &Self::NodeId, to: &Self::NodeId) -> Option<Self::Weight>;
+    fn neighbours(&self, node: &Self::NodeId) -> Self::Neighbours;
 }

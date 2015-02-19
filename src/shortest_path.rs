@@ -13,10 +13,10 @@ use num::traits::Zero;
 
 pub type Heuristic<N, W> = fn(from: &N, to: &N) -> W;
 
-pub fn a_star<G: Graph>(graph: &G, start: G::Node, end: G::Node,
-    heuristic: Heuristic<G::Node, G::Weight>) -> Option<Vec<G::Node>>
-    where G::Node: Hash<Hasher> + Eq + Clone,
-          G::Neighbours: Iterator<Item=G::Node>,
+pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
+    heuristic: Heuristic<G::NodeId, G::Weight>) -> Option<Vec<G::NodeId>>
+    where G::NodeId: Hash<Hasher> + Eq + Clone,
+          G::Neighbours: Iterator<Item=G::NodeId>,
           G::Weight: Clone + Ord + PartialOrd + Add<Output=G::Weight> + Zero
 {
     let mut dist_map: HashMap<_, PathNode<_, G::Weight>> = HashMap::new();

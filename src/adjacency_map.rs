@@ -56,7 +56,7 @@ impl<V, W> Index<NodeId> for AdjacencyMap<V, W> {
 type OutgoingIter<'a, W> = Map<Keys<'a, usize, W>, fn(&usize) -> usize>;
 
 impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
-    type Node = NodeId;
+    type NodeId = NodeId;
     type Weight = W;
     type Neighbours = OutgoingIter<'a, W>;
 
