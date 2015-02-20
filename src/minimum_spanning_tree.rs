@@ -25,7 +25,7 @@ pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
     while let Some(edge) = active_edges.pop() {
         let current_node = graph.target(&edge.edge);
         if !connected_nodes.insert(current_node.clone()) {
-            // If insert returned false, then this node has already been visited by some other edge
+            // If insert returned false, then this node has already been included by some other edge
             continue
         }
         edges.push(edge.edge.clone());
@@ -47,8 +47,8 @@ struct EdgeContainer<E, W> {
 }
 
 //
-// Boilerplate code for implementing Ord for EdgeContainer, ensuring that we implemented so that it
-// will be placed in as a binary heap as a min heap.
+// Boilerplate code for implementing Ord for EdgeContainer, ensuring that it is implemented so that
+// elements placed in a binary heap will form a min queue.
 //
 
 impl<E, W> PartialEq for EdgeContainer<E, W> where W: Eq {

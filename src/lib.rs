@@ -1,7 +1,7 @@
 //! # Graph
 //!
 //! A WIP library for graph representations and algorithms
-#![feature(std_misc, hash)]
+#![feature(core, std_misc, hash)]
 
 extern crate num;
 

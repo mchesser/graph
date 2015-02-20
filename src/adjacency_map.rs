@@ -82,7 +82,7 @@ impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
     fn weight(&self, edge: &(NodeId, NodeId)) -> W {
         let &(from, to) = edge;
         let node = self.map.get(&from).expect("Inconsistent graph");
-        self.nodes[*node].outgoing.get(&to).map(|w| w.clone()).expect("Inconsistent graph")
+        self.nodes[*node].outgoing.get(&to).cloned().expect("Inconsistent graph")
     }
 
     fn outgoing_edges(&self, node: &NodeId) -> OutgoingEdgesIter<'a, W> {
