@@ -4,7 +4,7 @@ use std::ops::Add;
 use std::cmp::{PartialOrd, Ordering};
 use std::hash::Hash;
 
-use std::collections::hash_map::{HashMap, Hasher, Entry};
+use std::collections::hash_map::{HashMap, Entry};
 use std::collections::BinaryHeap;
 
 use num;
@@ -14,7 +14,7 @@ pub type Heuristic<N, W> = fn(from: &N, to: &N) -> W;
 
 pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
     heuristic: Heuristic<G::NodeId, G::Weight>) -> Option<Vec<G::NodeId>>
-    where G::NodeId: Hash<Hasher> + Eq + Clone,
+    where G::NodeId: Hash + Eq + Clone,
           G::Edge: Clone,
           G::Weight: Clone + Ord + PartialOrd + Add<Output=G::Weight> + Zero
 {

@@ -4,11 +4,11 @@ use std::cmp::{PartialOrd, Ordering};
 use std::iter::IteratorExt;
 use std::hash::Hash;
 
-use std::collections::hash_map::Hasher;
+// use std::collections::hash_map::Hasher;
 use std::collections::{HashSet, BinaryHeap};
 
 pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
-    where G::NodeId: Hash<Hasher> + Eq + Clone,
+    where G::NodeId: Hash + Eq + Clone,
           G::Edge: Clone,
           G::Weight: Clone + Ord + PartialOrd
 {
