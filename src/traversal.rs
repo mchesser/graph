@@ -11,7 +11,7 @@ pub struct BfsNode<N> {
 }
 
 pub fn breadth_first_search<F, G: Graph>(graph: &G, start: G::NodeId, mut apply: F)
-    where F: FnMut(&[BfsNode<G::NodeId>]),
+    where F: FnMut(&[BfsNode<G::NodeId>]) -> bool,
           G::NodeId: Clone + Hash + Eq,
 {
     let mut visited = HashSet::new();
@@ -22,7 +22,8 @@ pub fn breadth_first_search<F, G: Graph>(graph: &G, start: G::NodeId, mut apply:
     while let Some(node) = frontier.pop_front() {
         let node_id = visit_order.len();
         visit_order.push(node.clone());
-        apply(&visit_order);
+
+        if !apply(&visit_order) { return }
 
         for target in graph.outgoing_edges(&node.value).map(|e| graph.target(&e)) {
             if visited.insert(target.clone()) {
@@ -61,6 +62,7 @@ mod test {
             let last = visited.last().unwrap();
             assert_eq!(last.value, index);
             index += 1;
+            true
         });
     }
 }
