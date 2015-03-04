@@ -10,6 +10,17 @@ pub struct BfsNode<N> {
     parent: usize,
 }
 
+impl<N: Clone> BfsNode<N> {
+    pub fn value(&self) -> N {
+        self.value.clone()
+    }
+
+    pub fn parent(&self) -> usize {
+        self.parent
+    }
+}
+
+
 pub fn breadth_first_search<F, G: Graph>(graph: &G, start: G::NodeId, mut apply: F)
     where F: FnMut(&[BfsNode<G::NodeId>]) -> bool,
           G::NodeId: Clone + Hash + Eq,
@@ -34,7 +45,6 @@ pub fn breadth_first_search<F, G: Graph>(graph: &G, start: G::NodeId, mut apply:
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -58,9 +68,7 @@ mod test {
 
         let mut index = 1;
         breadth_first_search(&&graph, 1, |visited| {
-            assert!(visited.last().is_some());
-            let last = visited.last().unwrap();
-            assert_eq!(last.value, index);
+            assert_eq!(visited.last().map(|n| n.value()), Some(index));
             index += 1;
             true
         });
