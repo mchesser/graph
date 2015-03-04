@@ -18,7 +18,7 @@ pub trait Graph {
     type Weight;
     type OutgoingEdgesIter: Iterator<Item=Self::Edge>;
 
-    fn target(&self, edge: &Self::Edge) -> Self::NodeId;
+    fn target(&self, edge: &Self::Edge) -> Option<Self::NodeId>;
     fn weight(&self, edge: &Self::Edge) -> Self::Weight;
     fn outgoing_edges(&self, node: &Self::NodeId) -> Self::OutgoingEdgesIter;
 }

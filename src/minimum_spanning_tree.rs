@@ -4,7 +4,6 @@ use std::cmp::{PartialOrd, Ordering};
 use std::iter::IteratorExt;
 use std::hash::Hash;
 
-// use std::collections::hash_map::Hasher;
 use std::collections::{HashSet, BinaryHeap};
 
 pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
@@ -23,7 +22,10 @@ pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
     );
 
     while let Some(edge) = active_edges.pop() {
-        let current_node = graph.target(&edge.edge);
+        let current_node = match graph.target(&edge.edge) {
+            Some(n) => n,
+            None => continue,
+        };
         if !connected_nodes.insert(current_node.clone()) {
             // If insert returned false, then this node has already been included by some other edge
             continue
@@ -34,7 +36,12 @@ pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
         active_edges.extend(
             graph.outgoing_edges(&current_node)
                 .map(|e| EdgeContainer { cost: graph.weight(&e), edge: e })
-                .filter(|e| !connected_nodes.contains(&graph.target(&e.edge)))
+                .filter(|e|
+                    match graph.target(&e.edge) {
+                        Some(n) => !connected_nodes.contains(&n),
+                        None => false,
+                    }
+                )
         );
     }
 

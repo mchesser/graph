@@ -49,7 +49,10 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
         // Visit all the neighbours of the current node that have not already been added to the
         // distance map
         for edge in graph.outgoing_edges(&active_val.node) {
-            let target = graph.target(&edge);
+            let target = match graph.target(&edge) {
+                Some(n) => n,
+                None => continue,
+            };
             if !dist_map.contains_key(&target) {
                 let mut next_val = PathNode::new(target, Some(active_val.node.clone()));
                 next_val.g_cost = active_val.g_cost.clone() + graph.weight(&edge);

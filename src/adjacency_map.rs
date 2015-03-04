@@ -75,14 +75,15 @@ impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
     type Weight = W;
     type OutgoingEdgesIter = OutgoingEdgesIter<'a, W>;
 
-    fn target(&self, edge: &(NodeId, NodeId)) -> NodeId {
-        edge.1
+    fn target(&self, edge: &(NodeId, NodeId)) -> Option<NodeId> {
+        if self.map.contains_key(&edge.1) { Some(edge.1) }
+        else { None }
     }
 
     fn weight(&self, edge: &(NodeId, NodeId)) -> W {
         let &(from, to) = edge;
-        let node = self.map.get(&from).expect("Inconsistent graph");
-        self.nodes[*node].outgoing.get(&to).cloned().expect("Inconsistent graph")
+        let node = self.map.get(&from).expect("Edge does not exist");
+        self.nodes[*node].outgoing.get(&to).cloned().expect("Target node does not exist")
     }
 
     fn outgoing_edges(&self, node: &NodeId) -> OutgoingEdgesIter<'a, W> {

@@ -25,7 +25,7 @@ pub fn breadth_first_search<F, G: Graph>(graph: &G, start: G::NodeId, mut apply:
 
         if !apply(&visit_order) { return }
 
-        for target in graph.outgoing_edges(&node.value).map(|e| graph.target(&e)) {
+        for target in graph.outgoing_edges(&node.value).filter_map(|e| graph.target(&e)) {
             if visited.insert(target.clone()) {
                 frontier.push_back(BfsNode { value: target, parent: node_id });
             }
