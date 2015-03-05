@@ -40,7 +40,7 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
         // Insert the current value if it is better than any previous value inserted
         match dist_map.entry(active_val.node.clone()) {
             Entry::Occupied(mut e) => {
-                if active_val.f_cost() < e.get().f_cost() { e.insert(active_val.clone()); }
+                if active_val.path_cost < e.get().path_cost { e.insert(active_val.clone()); }
                 else { continue }
             },
             Entry::Vacant(e) => { e.insert(active_val.clone()); },
@@ -55,8 +55,8 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
             };
             if !dist_map.contains_key(&target) {
                 let mut next_val = PathNode::new(target, Some(active_val.node.clone()));
-                next_val.g_cost = active_val.g_cost.clone() + graph.weight(&edge);
-                next_val.h_cost = heuristic(&next_val.node, &end);
+                next_val.path_cost = active_val.path_cost.clone() + graph.weight(&edge);
+                next_val.heuristic_cost = heuristic(&next_val.node, &end);
                 frontier.push(next_val);
             }
         }
@@ -70,30 +70,30 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
 struct PathNode<N, W> {
     node: N,
     parent: Option<N>,
-    h_cost: W,
-    g_cost: W,
+    path_cost: W,
+    heuristic_cost: W,
 }
 
 impl<N, W: Zero + Add> PathNode<N, W> {
     pub fn new(node: N, parent: Option<N>) -> PathNode<N, W> {
         PathNode {
             node: node,
-            h_cost: num::zero(),
-            g_cost: num::zero(),
+            path_cost: num::zero(),
+            heuristic_cost: num::zero(),
             parent: parent,
         }
     }
 }
 
 impl<N, W> PathNode<N, W> where W: Add<Output=W> + Clone {
-    pub fn f_cost(&self) -> W {
-        self.h_cost.clone() + self.g_cost.clone()
+    pub fn total_cost(&self) -> W {
+        self.heuristic_cost.clone() + self.total_cost.clone()
     }
 }
 
 impl<N, W> PartialEq for PathNode<N, W> where W: PartialEq + Add<Output=W> + Clone {
     fn eq(&self, other: &PathNode<N, W>) -> bool {
-        self.f_cost() == other.f_cost()
+        self.total_cost() == other.total_cost()
     }
 }
 impl<N, W> Eq for PathNode<N, W> where W: PartialEq + Add<Output=W> + Clone {}
@@ -101,13 +101,13 @@ impl<N, W> Eq for PathNode<N, W> where W: PartialEq + Add<Output=W> + Clone {}
 impl<N, W> PartialOrd for PathNode<N, W> where W: PartialOrd + Add<Output=W> + Clone {
     fn partial_cmp(&self, other: &PathNode<N, W>) -> Option<Ordering> {
         // Reverse the ordering so that it makes a min queue
-        other.f_cost().partial_cmp(&self.f_cost())
+        other.total_cost().partial_cmp(&self.total_cost())
     }
 }
 impl<N, W> Ord for PathNode<N, W> where W: Ord + Add<Output=W> + Clone {
     fn cmp(&self, other: &PathNode<N, W>) -> Ordering {
         // Reverse the ordering so that it makes a min queue
-        other.f_cost().cmp(&self.f_cost())
+        other.total_cost().cmp(&self.total_cost())
     }
 }
 
