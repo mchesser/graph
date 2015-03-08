@@ -54,7 +54,7 @@ impl<V, W> Index<NodeId> for AdjacencyMap<V, W> {
 
 // Currently there is no easy way to return an iterator that uses a closure, so we manually map the
 // inner iterator instead
-struct OutgoingEdgesIter<'a, W: 'a> {
+pub struct OutgoingEdgesIter<'a, W: 'a> {
     from: NodeId,
     iter_base: Keys<'a, usize, W>,
 }

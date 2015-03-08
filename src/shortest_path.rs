@@ -87,7 +87,7 @@ impl<N, W: Zero + Add> PathNode<N, W> {
 
 impl<N, W> PathNode<N, W> where W: Add<Output=W> + Clone {
     pub fn total_cost(&self) -> W {
-        self.heuristic_cost.clone() + self.total_cost.clone()
+        self.heuristic_cost.clone() + self.path_cost.clone()
     }
 }
 
