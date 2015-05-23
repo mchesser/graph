@@ -1,7 +1,6 @@
 use Graph;
 
 use std::cmp::{PartialOrd, Ordering};
-use std::iter::IteratorExt;
 use std::hash::Hash;
 
 use std::collections::{HashSet, BinaryHeap};
@@ -79,7 +78,6 @@ impl<E, W> Ord for EdgeContainer<E, W> where W: Ord + Clone {
 #[cfg(test)]
 mod tests {
     use super::prims;
-    use std::iter::AdditiveIterator;
     use AdjacencyMap;
     use Graph;
 
@@ -103,7 +101,7 @@ mod tests {
         graph.add_edge(3, 4, 3);
 
         let mst = prims(&&graph, 1);
-        let total = mst.iter().map(|e| (&graph).weight(&e)).sum();
+        let total = mst.iter().map(|e| (&graph).weight(&e)).fold(0, |acc, x| acc + x);
         assert_eq!(total, 3 + 1 + 2);
     }
 }

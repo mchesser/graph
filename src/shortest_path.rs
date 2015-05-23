@@ -16,7 +16,7 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
     heuristic: Heuristic<G::NodeId, G::Weight>) -> Option<Vec<G::NodeId>>
     where G::NodeId: Hash + Eq + Clone,
           G::Edge: Clone,
-          G::Weight: Clone + Ord + PartialOrd + Add<Output=G::Weight> + Zero
+          G::Weight: Clone + Ord + PartialOrd + Add + Zero
 {
     let mut dist_map: HashMap<_, PathNode<_, G::Weight>> = HashMap::new();
 
@@ -31,7 +31,7 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
             loop {
                 path.push(active_val.node.clone());
                 active_val = match active_val.parent.clone() {
-                    Some(v) => dist_map[v].clone(),
+                    Some(v) => dist_map[&v].clone(),
                     None => return Some(path),
                 }
             }

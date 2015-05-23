@@ -35,7 +35,7 @@ impl<V, W> AdjacencyMap<V, W> {
     }
 
     pub fn add_arc(&mut self, from: NodeId, to: NodeId, weight: W) {
-        self.nodes[self.map[from]].outgoing.insert(to, weight);
+        self.nodes[self.map[&from]].outgoing.insert(to, weight);
     }
 
     pub fn add_edge(&mut self, a: NodeId, b: NodeId, weight: W) where W: Clone {
@@ -47,8 +47,8 @@ impl<V, W> AdjacencyMap<V, W> {
 impl<V, W> Index<NodeId> for AdjacencyMap<V, W> {
     type Output = AdjacencyMapNode<V, W>;
 
-    fn index(&self, index: &NodeId) -> &AdjacencyMapNode<V, W> {
-        &self.nodes[self.map[*index]]
+    fn index(&self, index: NodeId) -> &AdjacencyMapNode<V, W> {
+        &self.nodes[self.map[&index]]
     }
 }
 
@@ -89,7 +89,7 @@ impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
     fn outgoing_edges(&self, node: &NodeId) -> OutgoingEdgesIter<'a, W> {
         OutgoingEdgesIter {
             from: *node,
-            iter_base: self.nodes[self.map[*node]].outgoing.keys(),
+            iter_base: self.nodes[self.map[node]].outgoing.keys(),
         }
     }
 }
