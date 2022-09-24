@@ -1,8 +1,9 @@
-use Graph;
+use std::{
+    collections::{hash_map::Keys, HashMap},
+    ops::Index,
+};
 
-use std::ops::Index;
-use std::collections::HashMap;
-use std::collections::hash_map::Keys;
+use crate::Graph;
 
 pub type NodeId = usize;
 type ListId = usize;
@@ -19,18 +20,12 @@ pub struct AdjacencyMap<V, W> {
 
 impl<V, W> AdjacencyMap<V, W> {
     pub fn new() -> AdjacencyMap<V, W> {
-        AdjacencyMap {
-            nodes: Vec::new(),
-            map: HashMap::new(),
-        }
+        AdjacencyMap { nodes: Vec::new(), map: HashMap::new() }
     }
 
     pub fn add_node(&mut self, node_id: NodeId, value: V) {
         let list_id = self.nodes.len();
-        self.nodes.push(AdjacencyMapNode {
-            value: value,
-            outgoing: HashMap::new(),
-        });
+        self.nodes.push(AdjacencyMapNode { value, outgoing: HashMap::new() });
         self.map.insert(node_id, list_id);
     }
 
@@ -38,7 +33,10 @@ impl<V, W> AdjacencyMap<V, W> {
         self.nodes[self.map[&from]].outgoing.insert(to, weight);
     }
 
-    pub fn add_edge(&mut self, a: NodeId, b: NodeId, weight: W) where W: Clone {
+    pub fn add_edge(&mut self, a: NodeId, b: NodeId, weight: W)
+    where
+        W: Clone,
+    {
         self.add_arc(a, b, weight.clone());
         self.add_arc(b, a, weight.clone());
     }
@@ -69,15 +67,17 @@ impl<'a, W> Iterator for OutgoingEdgesIter<'a, W> {
     }
 }
 
-impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
+impl<'a, N, W> Graph for &'a AdjacencyMap<N, W>
+where
+    W: Clone,
+{
     type NodeId = NodeId;
     type Edge = (NodeId, NodeId);
     type Weight = W;
     type OutgoingEdgesIter = OutgoingEdgesIter<'a, W>;
 
     fn target(&self, edge: &(NodeId, NodeId)) -> Option<NodeId> {
-        if self.map.contains_key(&edge.1) { Some(edge.1) }
-        else { None }
+        if self.map.contains_key(&edge.1) { Some(edge.1) } else { None }
     }
 
     fn weight(&self, edge: &(NodeId, NodeId)) -> W {
@@ -87,10 +87,6 @@ impl<'a, N, W> Graph for &'a AdjacencyMap<N, W> where W: Clone {
     }
 
     fn outgoing_edges(&self, node: &NodeId) -> OutgoingEdgesIter<'a, W> {
-        OutgoingEdgesIter {
-            from: *node,
-            iter_base: self.nodes[self.map[node]].outgoing.keys(),
-        }
+        OutgoingEdgesIter { from: *node, iter_base: self.nodes[self.map[node]].outgoing.keys() }
     }
 }
-

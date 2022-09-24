@@ -1,8 +1,9 @@
-use Graph;
+use std::{
+    collections::{HashSet, VecDeque},
+    hash::Hash,
+};
 
-use std::hash::Hash;
-use std::collections::VecDeque;
-use std::collections::HashSet;
+use crate::Graph;
 
 #[derive(Clone)]
 pub struct BfsNode<N> {
@@ -20,10 +21,10 @@ impl<N: Clone> BfsNode<N> {
     }
 }
 
-
 pub fn breadth_first_search<F, G: Graph>(graph: &G, start: G::NodeId, mut apply: F)
-    where F: FnMut(&[BfsNode<G::NodeId>]) -> bool,
-          G::NodeId: Clone + Hash + Eq,
+where
+    F: FnMut(&[BfsNode<G::NodeId>]) -> bool,
+    G::NodeId: Clone + Hash + Eq,
 {
     let mut visited = HashSet::new();
     let mut visit_order = vec![];
@@ -34,21 +35,22 @@ pub fn breadth_first_search<F, G: Graph>(graph: &G, start: G::NodeId, mut apply:
         let node_id = visit_order.len();
         visit_order.push(node.clone());
 
-        if !apply(&visit_order) { return }
+        if !apply(&visit_order) {
+            return;
+        }
 
         for target in graph.outgoing_edges(&node.value).filter_map(|e| graph.target(&e)) {
             if visited.insert(target.clone()) {
                 frontier.push_back(BfsNode { value: target, parent: node_id });
             }
         }
-
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use AdjacencyMap;
+    use crate::AdjacencyMap;
 
     #[test]
     pub fn basic_test() {

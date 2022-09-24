@@ -2,9 +2,10 @@
 name = "graph"
 version = "0.1.2"
 authors = ["Michael Chesser"]
+edition = "2021"
 
 [lib]
 name = "graph"
 
 [dependencies]
-num = "*"
+num-traits = "0.2.15"

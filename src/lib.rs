@@ -2,8 +2,6 @@
 //!
 //! A WIP library for graph representations and algorithms
 
-extern crate num;
-
 pub mod adjacency_map;
 pub mod shortest_path;
 pub mod minimum_spanning_tree;

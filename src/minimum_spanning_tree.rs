@@ -1,14 +1,16 @@
-use Graph;
+use std::{
+    cmp::{Ordering, PartialOrd},
+    collections::{BinaryHeap, HashSet},
+    hash::Hash,
+};
 
-use std::cmp::{PartialOrd, Ordering};
-use std::hash::Hash;
-
-use std::collections::{HashSet, BinaryHeap};
+use crate::Graph;
 
 pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
-    where G::NodeId: Hash + Eq + Clone,
-          G::Edge: Clone,
-          G::Weight: Clone + Ord + PartialOrd
+where
+    G::NodeId: Hash + Eq + Clone,
+    G::Edge: Clone,
+    G::Weight: Clone + Ord + PartialOrd,
 {
     let mut edges = Vec::new();
     let mut connected_nodes = HashSet::new();
@@ -16,8 +18,7 @@ pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
 
     let mut active_edges = BinaryHeap::new();
     active_edges.extend(
-        graph.outgoing_edges(&start)
-            .map(|e| EdgeContainer { cost: graph.weight(&e), edge: e })
+        graph.outgoing_edges(&start).map(|e| EdgeContainer { cost: graph.weight(&e), edge: e }),
     );
 
     while let Some(edge) = active_edges.pop() {
@@ -27,20 +28,19 @@ pub fn prims<G: Graph>(graph: &G, start: G::NodeId) -> Vec<G::Edge>
         };
         if !connected_nodes.insert(current_node.clone()) {
             // If insert returned false, then this node has already been included by some other edge
-            continue
+            continue;
         }
         edges.push(edge.edge.clone());
 
         // Add this node's edges to the list of active edges
         active_edges.extend(
-            graph.outgoing_edges(&current_node)
+            graph
+                .outgoing_edges(&current_node)
                 .map(|e| EdgeContainer { cost: graph.weight(&e), edge: e })
-                .filter(|e|
-                    match graph.target(&e.edge) {
-                        Some(n) => !connected_nodes.contains(&n),
-                        None => false,
-                    }
-                )
+                .filter(|e| match graph.target(&e.edge) {
+                    Some(n) => !connected_nodes.contains(&n),
+                    None => false,
+                }),
         );
     }
 
@@ -57,19 +57,28 @@ struct EdgeContainer<E, W> {
 // elements placed in a binary heap will form a min queue.
 //
 
-impl<E, W> PartialEq for EdgeContainer<E, W> where W: Eq {
+impl<E, W> PartialEq for EdgeContainer<E, W>
+where
+    W: Eq,
+{
     fn eq(&self, other: &EdgeContainer<E, W>) -> bool {
         self.cost == other.cost
     }
 }
 impl<E, W> Eq for EdgeContainer<E, W> where W: Eq {}
 
-impl<E, W> PartialOrd for EdgeContainer<E, W> where W: PartialOrd + Eq {
+impl<E, W> PartialOrd for EdgeContainer<E, W>
+where
+    W: PartialOrd + Eq,
+{
     fn partial_cmp(&self, other: &EdgeContainer<E, W>) -> Option<Ordering> {
         other.cost.partial_cmp(&self.cost)
     }
 }
-impl<E, W> Ord for EdgeContainer<E, W> where W: Ord + Clone {
+impl<E, W> Ord for EdgeContainer<E, W>
+where
+    W: Ord + Clone,
+{
     fn cmp(&self, other: &EdgeContainer<E, W>) -> Ordering {
         other.cost.cmp(&self.cost)
     }
@@ -78,8 +87,8 @@ impl<E, W> Ord for EdgeContainer<E, W> where W: Ord + Clone {
 #[cfg(test)]
 mod tests {
     use super::prims;
-    use AdjacencyMap;
-    use Graph;
+    use crate::AdjacencyMap;
+    use crate::Graph;
 
     #[test]
     fn test_simple() {

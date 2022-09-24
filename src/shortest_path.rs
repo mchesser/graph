@@ -1,22 +1,29 @@
-use Graph;
+use std::{
+    cmp::{Ordering, PartialOrd},
+    collections::{
+        hash_map::{Entry, HashMap},
+        BinaryHeap,
+    },
+    hash::Hash,
+    ops::Add,
+};
 
-use std::ops::Add;
-use std::cmp::{PartialOrd, Ordering};
-use std::hash::Hash;
+use num_traits::Zero;
 
-use std::collections::hash_map::{HashMap, Entry};
-use std::collections::BinaryHeap;
-
-use num;
-use num::traits::Zero;
+use crate::Graph;
 
 pub type Heuristic<N, W> = fn(from: &N, to: &N) -> W;
 
-pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
-    heuristic: Heuristic<G::NodeId, G::Weight>) -> Option<Vec<G::NodeId>>
-    where G::NodeId: Hash + Eq + Clone,
-          G::Edge: Clone,
-          G::Weight: Clone + Ord + PartialOrd + Add + Zero
+pub fn a_star<G: Graph>(
+    graph: &G,
+    start: G::NodeId,
+    end: G::NodeId,
+    heuristic: Heuristic<G::NodeId, G::Weight>,
+) -> Option<Vec<G::NodeId>>
+where
+    G::NodeId: Hash + Eq + Clone,
+    G::Edge: Clone,
+    G::Weight: Clone + Ord + PartialOrd + Add + Zero,
 {
     let mut dist_map: HashMap<_, PathNode<_, G::Weight>> = HashMap::new();
 
@@ -40,10 +47,16 @@ pub fn a_star<G: Graph>(graph: &G, start: G::NodeId, end: G::NodeId,
         // Insert the current value if it is better than any previous value inserted
         match dist_map.entry(active_val.node.clone()) {
             Entry::Occupied(mut e) => {
-                if active_val.path_cost < e.get().path_cost { e.insert(active_val.clone()); }
-                else { continue }
-            },
-            Entry::Vacant(e) => { e.insert(active_val.clone()); },
+                if active_val.path_cost < e.get().path_cost {
+                    e.insert(active_val.clone());
+                }
+                else {
+                    continue;
+                }
+            }
+            Entry::Vacant(e) => {
+                e.insert(active_val.clone());
+            }
         }
 
         // Visit all the neighbours of the current node that have not already been added to the
@@ -76,35 +89,42 @@ struct PathNode<N, W> {
 
 impl<N, W: Zero + Add> PathNode<N, W> {
     pub fn new(node: N, parent: Option<N>) -> PathNode<N, W> {
-        PathNode {
-            node: node,
-            path_cost: num::zero(),
-            heuristic_cost: num::zero(),
-            parent: parent,
-        }
+        PathNode { node, path_cost: num_traits::zero(), heuristic_cost: num_traits::zero(), parent }
     }
 }
 
-impl<N, W> PathNode<N, W> where W: Add<Output=W> + Clone {
+impl<N, W> PathNode<N, W>
+where
+    W: Add<Output = W> + Clone,
+{
     pub fn total_cost(&self) -> W {
         self.heuristic_cost.clone() + self.path_cost.clone()
     }
 }
 
-impl<N, W> PartialEq for PathNode<N, W> where W: PartialEq + Add<Output=W> + Clone {
+impl<N, W> PartialEq for PathNode<N, W>
+where
+    W: PartialEq + Add<Output = W> + Clone,
+{
     fn eq(&self, other: &PathNode<N, W>) -> bool {
         self.total_cost() == other.total_cost()
     }
 }
-impl<N, W> Eq for PathNode<N, W> where W: PartialEq + Add<Output=W> + Clone {}
+impl<N, W> Eq for PathNode<N, W> where W: PartialEq + Add<Output = W> + Clone {}
 
-impl<N, W> PartialOrd for PathNode<N, W> where W: PartialOrd + Add<Output=W> + Clone {
+impl<N, W> PartialOrd for PathNode<N, W>
+where
+    W: PartialOrd + Add<Output = W> + Clone,
+{
     fn partial_cmp(&self, other: &PathNode<N, W>) -> Option<Ordering> {
         // Reverse the ordering so that it makes a min queue
         other.total_cost().partial_cmp(&self.total_cost())
     }
 }
-impl<N, W> Ord for PathNode<N, W> where W: Ord + Add<Output=W> + Clone {
+impl<N, W> Ord for PathNode<N, W>
+where
+    W: Ord + Add<Output = W> + Clone,
+{
     fn cmp(&self, other: &PathNode<N, W>) -> Ordering {
         // Reverse the ordering so that it makes a min queue
         other.total_cost().cmp(&self.total_cost())
@@ -114,9 +134,11 @@ impl<N, W> Ord for PathNode<N, W> where W: Ord + Add<Output=W> + Clone {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use AdjacencyMap;
+    use crate::AdjacencyMap;
 
-    fn no_heuristic(_: &usize, _: &usize) -> u32 { 0 }
+    fn no_heuristic(_: &usize, _: &usize) -> u32 {
+        0
+    }
 
     #[test]
     fn test_simple() {
